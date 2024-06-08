@@ -36,16 +36,31 @@ def add_phone(conn, id, phone):
         conn.commit()
 
 def change_client(conn, client_id, first_name=None, last_name=None, email=None, phones=None, old_phone=None):
-    with conn.cursor() as cur:
-        cur.execute("""
-                    UPDATE customer_data SET first_name=%s, second_name=%s, email=%s WHERE id=%s;
-                    """, (first_name, last_name, email, client_id))
-        conn.commit()
-    with conn.cursor() as cur:
-        cur.execute("""
-                    UPDATE customer_phones SET phone=%s WHERE phone=%s;
-                    """, (phones, old_phone))
-        conn.commit()
+    if first_name is not None:
+        with conn.cursor() as cur:
+            cur.execute("""
+                        UPDATE customer_data SET first_name=%s WHERE id=%s;
+                        """, (first_name, client_id))
+            conn.commit()
+    if last_name is not None:
+        with conn.cursor() as cur:
+            cur.execute("""
+                        UPDATE customer_data SET second_name=%s WHERE id=%s;
+                        """, (last_name, client_id))
+            conn.commit()
+    if email is not None:
+        with conn.cursor() as cur:
+            cur.execute("""
+                        UPDATE customer_data SET email=%s WHERE id=%s;
+                        """, (email, client_id))
+            conn.commit()
+    if phones is not None:
+        with conn.cursor() as cur:
+            cur.execute("""
+                        UPDATE customer_phones SET phone=%s WHERE id_customer=%s;
+                        """, (phones, client_id))
+            conn.commit()
+
 def delete_phone(conn, phone):
     with conn.cursor() as cur:
         cur.execute("""
@@ -72,16 +87,17 @@ def find_client(conn, first_name=None, last_name=None, email=None, phone=None):
                     """, (first_name, last_name, email, phone))
         print(cur.fetchall())
 
-with psycopg2.connect(database="clients_db", user="postgres", password="postgres") as conn:
-    create_db(conn)
-    add_client(conn, 1, "Иван", "Иванов", "Ivanov@mail.ru", "8(999)111-11-11")
-    add_client(conn, 2, "Пётр", "Петров", "Petrov@mail.ru")
-    add_client(conn, 3, "Иван", "Сидоров", "Sidorov@mail.ru", "8(999)111-44-44")
-    # add_phone(conn, 2, "8(999)111-22-22")
-    # add_phone(conn, 2, "8(999)111-33-33")
-    # change_client(conn, 2, "Петр", "Петров", "PetrPetrov@mail.ru", "8(999)111-33-34", "8(999)111-33-33")
-    # delete_phone(conn, "8(999)111-22-22")
-    # delete_client(conn, 3)
-    # find_client(conn, first_name="Иван")
-    # find_client(conn, phone="8(999)111-33-34")
-conn.close()
+if __name__ == "__main__":
+    with psycopg2.connect(database="clients_db", user="postgres", password="23092011") as conn:
+        create_db(conn)
+        # add_client(conn, 1, "Иван", "Иванов", "Ivanov@mail.ru", "8(999)111-11-11")
+        # add_client(conn, 2, "Пётр", "Петров", "Petrov@mail.ru")
+        # add_client(conn, 3, "Иван", "Сидоров", "Sidorov@mail.ru", "8(999)111-44-44")
+        # add_phone(conn, 2, "8(999)111-22-22")
+        # add_phone(conn, 2, "8(999)111-33-33")
+        # change_client(conn, 2,  email="PetrPetrov@mail.ru", phones="8(999)111-33-34", old_phone="8(999)111-33-33")
+        # delete_phone(conn, "8(999)111-22-22")
+        # delete_client(conn, 3)
+        # find_client(conn, first_name="Иван")
+        # find_client(conn, phone="8(999)111-33-34")
+    conn.close()
